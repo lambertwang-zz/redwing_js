@@ -1,0 +1,24 @@
+
+body {
+	font-family: Monospace;
+	background-color: #808080;
+	color: #ffffff;
+	margin: 0px;
+	overflow: hidden;
+}
+
+div#fps_counter {
+	position: fixed;
+	left: 32px;
+	top: 32px;
+}
+
+div#redwing {
+	position: fixed;
+	width: 100%;
+}
+
+canvas {
+    display: table;
+    margin: 0 auto;
+}
