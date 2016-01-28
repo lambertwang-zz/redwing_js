@@ -1,5 +1,6 @@
-varying vec3 vColor;
+varying vec2 vUv;
+uniform sampler2D bg_tex;
 
 void main() {  
-  gl_FragColor = vec4(vColor, 0.5);  // adjust the alpha
+	gl_FragColor = texture2D(bg_tex, vUv);
 }

@@ -1,5 +1,30 @@
 "use strict";
 
+const frame_time = 15;
+
+const cell_size = 16;
+const bg_height = 128;
+const bg_width = 256;
+const bg_size_y = cell_size*bg_height;
+const bg_size_x = cell_size*bg_width;
+const camera_width_cells = 48;
+
+const draw_seams = true;
+const enable_aa = true;
+
+var scene, camera, renderer
+
+var gameManager;
+var graphicsManager;
+
+// True is down
+var key_status = {
+	38: false, // up
+	37: false, // left
+	39: false, // right
+	40: false // down
+}
+
 function hsltorgb (h, s, l) {
 	var c = (1 - Math.abs(2*l - 1)) * s;
 	var x = c * (1- Math.abs(((h / 60) % 2) - 1.0))

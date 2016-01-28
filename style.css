@@ -7,10 +7,20 @@ body {
 	overflow: hidden;
 }
 
-div#fps_counter {
+#fps_counter {
 	position: fixed;
 	left: 32px;
 	top: 32px;
+}
+#graphics_ticks {
+	position: fixed;
+	left: 32px;
+	top: 64px;
+}
+#game_ticks {
+	position: fixed;
+	left: 32px;
+	top: 96px;
 }
 
 div#redwing {

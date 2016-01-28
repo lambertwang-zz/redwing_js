@@ -3,21 +3,7 @@
 // Manages game logic
 // apprx 64 tick
 // Holy sh!t, the javascript timing functions are kinda screwy
-const frame_time = 15;
 
-const cell_size = 16;
-const bg_height = 64;
-const bg_width = 128;
-const bg_size_y = cell_size*bg_height;
-const bg_size_x = cell_size*bg_width;
-
-// True is down
-var key_status = {
-	38: false, // up
-	37: false, // left
-	39: false, // right
-	40: false // down
-}
 
 function GameManager() {
 	this.game_over = false;
@@ -30,6 +16,10 @@ function GameManager() {
 	// Additional framerate accuracy
 	this.adjust_time = this.prev_time;
 	this.fps = 0;
+
+	this.objectList = {};
+	this.additionList = {};
+	this.removalList = {};
 }
 
 GameManager.prototype.mainLoop = function() {
@@ -91,9 +81,10 @@ GameManager.prototype.mainLoop2 = function() {
 
 GameManager.prototype.mainLoop3 = function() {
 	this.step_count += 1;
+    document.getElementById("game_ticks").innerHTML = this.step_count;
 
 	// Game logic begins here
-	this.moveCamera();
+	this.updateWorld();
 	// Game logic ends here
 
 	var clock = new Date().getTime();
@@ -116,6 +107,51 @@ GameManager.prototype.mainLoop3 = function() {
 	}
 };
 
+GameManager.prototype.removeObject = function(obj) {
+    if (!(obj.obj_id in this.removalList)) {
+		this.removalList[obj.obj_id] = obj;
+	}
+};
+
+GameManager.prototype.addObject = function(obj) {
+	if (!(obj.obj_id in this.additionList)) {
+		this.additionList[obj.obj_id] = obj;
+	}
+};
+
+GameManager.prototype.updateWorld = function() {
+	for (var key in this.additionList) {
+		if (this.additionList.hasOwnProperty(key)) {
+			if (!(key in this.objectList)) {
+				this.objectList[key] = this.additionList[key];
+				delete this.additionList[key];
+			}
+		}
+	}
+	
+	for (var key in this.objectList) {
+		if (this.objectList.hasOwnProperty(key)) {
+			this.objectList[key].tick();
+		}
+	}
+
+	for (var key in this.objectList) {
+		if (this.objectList.hasOwnProperty(key)) {
+			this.objectList[key].draw();
+		}
+	}
+
+	for (var key in this.removalList) {
+		if (this.removalList.hasOwnProperty(key)) {
+			if (key in this.objectList) {
+				delete this.objectList[key];
+				this.removalList[key].kill();
+				delete this.removalList[key];
+			}
+		}
+	}
+};
+
 GameManager.prototype.moveCamera = function() {
 	if (key_status[38]) {
 		camera.position.y += 4;
@@ -129,17 +165,6 @@ GameManager.prototype.moveCamera = function() {
 	if (key_status[39]) {
 		camera.position.x += 4;
 	}
-	if (camera.position.y > bg_size_y / 2) {
-		camera.position.y -= bg_size_y;
-	} else if (camera.position.y <  -bg_size_y / 2) {
-		camera.position.y += bg_size_y;
-	}
-	if (camera.position.x > bg_size_x / 2) {
-		camera.position.x -= bg_size_x;
-	} else if (camera.position.x < -bg_size_x / 2) {
-		camera.position.x += bg_size_x;
-	}
-
 };
 
 GameManager.prototype.sendEvent = function(event) {

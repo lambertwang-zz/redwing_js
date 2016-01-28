@@ -1,28 +1,32 @@
 "use strict";
-const draw_seams = true;
 
 // Manages Graphics
 function GraphicsManager(gameManager) {
+    this.graphics_ticks = 0;
+
 	scene = new THREE.Scene();
-	//camera = new THREE.PerspectiveCamera(75, 16.0/9.0, 64, 320);
-    camera = new THREE.OrthographicCamera(-256, 256, 144, -144, 64, 320);
+	//camera = new THREE.PerspectiveCamera(90, 16.0/9.0, 128, 288);
+    //camera.position.z = 256;
+    camera = new THREE.OrthographicCamera(
+        -camera_width_cells*cell_size/2.0,  
+        camera_width_cells*cell_size/2.0,  
+        camera_width_cells*cell_size*9.0/32.0,  
+        -camera_width_cells*cell_size*9.0/32.0,  
+        64, 144);
+    
     camera.aspect = 16.0/9.0;
-    camera.position.z = 256;
-
-    geometry = new THREE.BoxGeometry(32, 32, 32, 8, 8, 8);
-	//material = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: false});
-    material = new THREE.MeshDepthMaterial({wireframe: false});
-
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.position.z = 32;
-    scene.add(mesh);
-
+    camera.position.z = 128;
+    
     this.initBg();
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: enable_aa});
     renderer.setSize(window.innerHeight * camera.aspect, window.innerHeight);
 
     document.getElementById("redwing").appendChild(renderer.domElement);
+
+    this.particleList = {};
+    this.additionList = {};
+    this.removalList = {};
 }
 
 GraphicsManager.prototype.initBg = function() {
@@ -44,15 +48,15 @@ GraphicsManager.prototype.initBg = function() {
         2*bg_size_x, 2*bg_size_y,
         1, 1
         );
-    var bg_tex = new THREE.DataTexture(
+    this.bg_tex = new THREE.DataTexture(
         this.bg_pixels, bg_width, bg_height, THREE.RGBFormat
         );
-    bg_tex.wrapS = THREE.RepeatWrapping;
-    bg_tex.wrapT = THREE.RepeatWrapping;
-    bg_tex.repeat.set(2, 2);
-    bg_tex.needsUpdate = true;
+    this.bg_tex.wrapS = THREE.RepeatWrapping;
+    this.bg_tex.wrapT = THREE.RepeatWrapping;
+    this.bg_tex.repeat.set(2, 2);
+    this.bg_tex.needsUpdate = true;
     var bg_mat = new THREE.MeshBasicMaterial({
-        map: bg_tex,
+        map: this.bg_tex,
         wireframe: false
         });
     /*
@@ -83,13 +87,26 @@ GraphicsManager.prototype.initBg = function() {
     if (draw_seams) {
         // Draws seams
         var seam_geo = new THREE.PlaneGeometry(bg_size_x, bg_size_y, 4, 4);
-        var seam_mat = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+        var seam_mat = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true, wireframeLinewidth: 4});
         this.seam = new THREE.Mesh(seam_geo, seam_mat);
         scene.add(this.seam);
     }
 };
 
 GraphicsManager.prototype.updateGraphics = function() {
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.02;
+    
+    if (camera.position.y > bg_size_y / 2) {
+        camera.position.y -= bg_size_y;
+    } else if (camera.position.y <  -bg_size_y / 2) {
+        camera.position.y += bg_size_y;
+    }
+    if (camera.position.x > bg_size_x / 2) {
+        camera.position.x -= bg_size_x;
+    } else if (camera.position.x < -bg_size_x / 2) {
+        camera.position.x += bg_size_x;
+    }
 };
 
 
@@ -97,5 +114,50 @@ GraphicsManager.prototype.resizeRenderer = function() {
     camera.aspect = 16.0/9.0;
     renderer.setSize(window.innerHeight * camera.aspect, window.innerHeight);
     camera.updateProjectionMatrix();
+};
+
+
+GraphicsManager.prototype.removeParticle = function(part) {
+    if (!(part.part_id in this.removalList)) {
+        this.removalList[part.part_id] = part;
+    }
+};
+
+GraphicsManager.prototype.addParticle = function(part) {
+    if (!(part.part_id in this.additionList)) {
+        this.additionList[part.part_id] = part;
+    }
+};
+
+GraphicsManager.prototype.updateGraphics = function() {
+    for (var key in this.additionList) {
+        if (this.additionList.hasOwnProperty(key)) {
+            if (!(key in this.particleList)) {
+                this.particleList[key] = this.additionList[key];
+                delete this.additionList[key];
+            }
+        }
+    }
+
+    for (var key in this.particleList) {
+        if (this.particleList.hasOwnProperty(key)) {
+            this.particleList[key].draw();
+            if (this.particleList[key].lifespan <= 0) {
+                this.removeParticle(this.particleList[key]);
+            }
+        }
+    }
+
+    for (var key in this.removalList) {
+        if (this.removalList.hasOwnProperty(key)) {
+            if (key in this.particleList) {
+                delete this.particleList[key];
+                this.removalList[key].kill();
+                delete this.removalList[key];
+            }
+        }
+    }
+    this.graphics_ticks++;
+    document.getElementById("graphics_ticks").innerHTML = this.graphics_ticks;
 };
 
