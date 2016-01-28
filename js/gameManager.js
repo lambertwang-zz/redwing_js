@@ -20,7 +20,31 @@ function GameManager() {
 	this.objectList = {};
 	this.additionList = {};
 	this.removalList = {};
+
+	this.cellArray = new Array(bg_height*bg_width);
+	for (var i = 0; i < bg_width; i++) {
+		for (var j = 0; j < bg_height; j++) {
+			this.cellArray[i + j * bg_width] = new Hitbox(i, j);
+		}
+	}
 }
+
+// Accepts world coordinates
+GameManager.prototype.getHitbox = function(x, y) {
+	if (x > bg_size_x) {
+		x -= bg_size_x;
+	} else if (x < 0) {
+		x += bg_size_x;
+	}
+	if (y > bg_size_y) {
+		y -= bg_size_y;
+	} else if (y < 0) {
+		y += bg_size_y;
+	}
+	x = Math.floor(x / cell_size);
+	y = Math.floor(y / cell_size);
+	return this.cellArray[x + y * bg_width];
+};
 
 GameManager.prototype.mainLoop = function() {
 	var clock = new Date().getTime();
@@ -93,7 +117,7 @@ GameManager.prototype.mainLoop3 = function() {
 
 	if (this.step_count % 60 == 0) {
 		this.fps = 60*1000 / (clock-this.prev_time);
-		document.getElementById("fps_counter").innerHTML = this.fps.toFixed(3);
+		document.getElementById("tps_counter").innerHTML = this.fps.toFixed(3);
 		this.prev_time = clock;
 	}
 
@@ -132,6 +156,13 @@ GameManager.prototype.updateWorld = function() {
 	for (var key in this.objectList) {
 		if (this.objectList.hasOwnProperty(key)) {
 			this.objectList[key].tick();
+			this.objectList[key].updateHitboxes();
+		}
+	}
+
+	for (var key in this.objectList) {
+		if (this.objectList.hasOwnProperty(key)) {
+			this.objectList[key].generateCollisions();
 		}
 	}
 
@@ -170,11 +201,3 @@ GameManager.prototype.moveCamera = function() {
 GameManager.prototype.sendEvent = function(event) {
 
 };
-
-$(document).keydown(function(event) {
-	key_status[event.which] = true;
-});
-
-$(document).keyup(function(event) {
-	key_status[event.which] = false;
-});

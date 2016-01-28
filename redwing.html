@@ -10,13 +10,20 @@
 	<body onresize="resizeRenderer()">
 		<div id="info">
 			FPS
+			<br/>
 			<span id="fps_counter">FPS</span>
 			<br/>
-			Graphics Ticks
-			<span id="game_ticks">Graphics Ticks</span>
+			Frames
 			<br/>
-			Game Ticks
-			<span id="graphics_ticks">Game Ticks</span>
+			<span id="graphics_ticks">Frames</span>
+			<br/>
+			TPS
+			<br/>
+			<span id="tps_counter">TPS</span>
+			<br/>
+			Ticks
+			<br/>
+			<span id="game_ticks">Ticks</span>
 			<br/>
 		</div>
 		<div id="redwing"></div>
@@ -89,6 +96,8 @@ void main() {
 		
 		<script src="js/util.js"></script>
 		
+		<script src="js/hitbox.js"></script>
+
 		<script src="js/particle.js"></script>
 		<script src="js/object.js"></script>
 		

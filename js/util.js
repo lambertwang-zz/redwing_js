@@ -28,6 +28,14 @@ var key_status = {
 	90: false // z
 }
 
+$(document).keydown(function(event) {
+	key_status[event.which] = true;
+});
+
+$(document).keyup(function(event) {
+	key_status[event.which] = false;
+});
+
 function hsltorgb (h, s, l) {
 	var c = (1 - Math.abs(2*l - 1)) * s;
 	var x = c * (1- Math.abs(((h / 60) % 2) - 1.0))
@@ -82,5 +90,5 @@ function rgbtohsl (r, g, b) {
 }
 
 function signum(num) {
-	return (num == 0 ? 0 : num > 0.0); 
+	return (num == 0 ? 0 : (num > 0.0 ? 1.0 : -1.0)); 
 }

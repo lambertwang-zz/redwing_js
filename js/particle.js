@@ -2,13 +2,13 @@
 var part_id_iter = 0;
 
 function RwParticle(lifespan) {
-	this.x_pos = 0;
-	this.y_pos = 0;
-	this.ori = 0; // Orientation
 	this.part_id = part_id_iter;
 	part_id_iter++;
 	graphicsManager.addParticle(this);
 
+    this.x_pos = 0;
+    this.y_pos = 0;
+    
 	this.part_mesh = undefined;
 
     this.lifespan = lifespan;
@@ -27,15 +27,9 @@ RwParticle.prototype.draw = function() {
     } else if (this.y_pos <  -bg_size_y / 2) {
         this.y_pos += bg_size_y;
     }
-    if (this.ori > Math.PI) {
-        this.ori -= 2 * Math.PI;
-    } else if (this.ori > Math.PI) {
-        this.ori += 2 * Math.PI;
-    }
 
 	this.part_mesh.position.x = this.x_pos;
 	this.part_mesh.position.y = this.y_pos;
-	this.part_mesh.rotation.z = this.ori;
 
     if (camera.position.x - this.part_mesh.position.x > bg_size_x / 2) {
         this.part_mesh.position.x += bg_size_x;
@@ -48,10 +42,6 @@ RwParticle.prototype.draw = function() {
         this.part_mesh.position.y -= bg_size_y;
     }
 
-	if (this.camera_follow == true) {
-		camera.position.x = this.part_mesh.position.x;
-		camera.position.y = this.part_mesh.position.y;
-	}
     this.lifespan--;
     this.life_pct = this.lifespan / this.max_lifespan;
 };
@@ -65,7 +55,6 @@ function Crescent(lifespan, x, y, p_size) {
 	
     this.x_pos = x;
     this.y_pos = y;
-    this.ori = Math.random() * Math.PI * 2 - Math.PI;
 
 	var geo = new THREE.PlaneGeometry(p_size, p_size, 1, 1);
 
@@ -88,6 +77,7 @@ function Crescent(lifespan, x, y, p_size) {
 
     this.part_mesh = new THREE.Mesh(geo, this.cres_mat);
     this.part_mesh.position.z = 16;
+    this.part_mesh.rotation.z = Math.random() * Math.PI * 2 - Math.PI;
     scene.add(this.part_mesh);
 }
 

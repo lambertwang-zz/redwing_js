@@ -7,11 +7,13 @@ function RwObject() {
     this.obj_id = obj_id_iter;
     obj_id_iter++;
     gameManager.addObject(this);
+    this.type = "RwObject";
 
 	this.x_pos = 0.0;
 	this.y_pos = 0.0;
     this.x_last = 0.0;
     this.y_last = 0.0;
+
 	this.ori = 0.0; // Orientation
     this.roll = 0.0;
     this.pitch = 0.0;
@@ -22,6 +24,11 @@ function RwObject() {
 
     this.verlet_movement = false;
     this.dir_control = false;
+
+    // List of world cells
+    this.hitboxes = {};
+    // List of objects already collided with
+    this.collided = [];
 }
 
 RwObject.prototype.draw = function() {
@@ -77,16 +84,60 @@ RwObject.prototype.tick = function() {
         this.y_pos += bg_size_y;
         this.y_last += bg_size_y;
     }
-    if (this.ori > Math.PI) {
-    	this.ori -= 2 * Math.PI;
-	} else if (this.ori < -Math.PI) {
-    	this.ori += 2 * Math.PI;
+    if (this.dir_control) {
+        if (this.ori > Math.PI) {
+        	this.ori -= 2 * Math.PI;
+    	} else if (this.ori < -Math.PI) {
+        	this.ori += 2 * Math.PI;
+        }
+        if (this.roll > Math.PI) {
+            this.roll -= 2 * Math.PI;
+        } else if (this.roll < -Math.PI) {
+            this.roll += 2 * Math.PI;
+        }
     }
-    if (this.roll > Math.PI) {
-        this.roll -= 2 * Math.PI;
-    } else if (this.roll < -Math.PI) {
-        this.roll += 2 * Math.PI;
+};
+
+RwObject.prototype.updateHitboxes = function() {
+    for (var key in this.hitboxes) {
+        if (this.hitboxes.hasOwnProperty(key)) {
+            this.hitboxes[key].removeObject(this);
+        }
     }
+    var new_hitboxes = {};
+    var center_hitbox = gameManager.getHitbox(this.x_pos, this.y_pos);
+    center_hitbox.addObject(this);
+    new_hitboxes[center_hitbox.hb_id] = center_hitbox
+    this.hitboxes = new_hitboxes;
+    this.collided = [String(this.obj_id)];
+};
+
+RwObject.prototype.addHitbox = function(hb) {
+    if (!(hb.hb_id in this.hitboxes)) {
+        this.hitboxes[hb.hb_id] = hb;
+    }
+};
+
+RwObject.prototype.generateCollisions = function() {
+    for (var key in this.hitboxes) {
+        if (this.hitboxes.hasOwnProperty(key)) {
+            var check_hitbox = this.hitboxes[key].contents;
+            for (var obj_key in check_hitbox) {
+                if (check_hitbox.hasOwnProperty(obj_key)) {
+                    if (this.collided.indexOf(obj_key) > -1) {
+                        // Object already collided
+                    } else {
+                        this.collided.push(obj_key);
+                        this.collide(check_hitbox[obj_key]);
+                    }
+                }
+            }
+        }
+    }
+};
+
+RwObject.prototype.collide = function(other_obj) {
+    // To be implemented by subclasses
 };
 
 RwObject.prototype.kill = function() {
@@ -95,8 +146,9 @@ RwObject.prototype.kill = function() {
 
 function Plane() {
 	RwObject.call(this);
+    this.type = "Plane";
 	
-	var geo = new THREE.BoxGeometry(48, 32, 16, 1, 1, 1);
+	var geo = new THREE.BoxGeometry(48, 16, 32, 1, 1, 1);
 	
     var mat = new THREE.ShaderMaterial({
             // map: bg_tex, 
@@ -125,11 +177,17 @@ function Plane() {
 Plane.prototype = Object.create(RwObject.prototype);
 
 Plane.prototype.draw = function() {
-    if (Math.abs(this.ori) > Math.PI/2.0) {
-        //this.ori += signum(this.ori) * 0.01;
+    // Makes the roll level out
+    if (Math.abs(this.ori) < Math.PI/2) {
+        if (Math.abs(this.roll) > 0.01) {
+            this.roll -= signum(this.roll) * 0.01;
+        }
     } else {
-
+        if (Math.abs(this.roll) < Math.PI - 0.01) {
+            this.roll += signum(this.roll) * 0.01;
+        }
     }
+
     RwObject.prototype.draw.call(this);
 }
 
@@ -145,27 +203,30 @@ Plane.prototype.tick = function() {
 	if (key_status[40]) {
 		this.x_last += 0.6 * Math.cos(this.ori);
 		this.y_last += 0.6 * Math.sin(this.ori);
-        
+
         if (gameManager.step_count % 6 == 0) {
             new Crescent(10, this.x_pos, this.y_pos, 32);
         }
 	}
 	if (key_status[37]) {
 		this.ori += 0.04;
-	    this.roll += 0.04;
+        this.roll += 0.04;
     }
 	if (key_status[39]) {
 		this.ori -= 0.04;
-	    this.roll -= 0.04;
+        this.roll -= 0.04;
     }
-
 
 	RwObject.prototype.tick.call(this);
 }
 
+Plane.prototype.collide = function(other_obj) {
+    console.log("Obj "+this.obj_id+" collided with "+other_obj.obj_id);
+};
 
 function Cuuube(x, y) {
 	RwObject.call(this);
+    this.type = "Cuuube";
 	
 	this.x_pos = x;
 	this.y_pos = y;
