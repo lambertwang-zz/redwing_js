@@ -87,7 +87,7 @@ function Crescent(lifespan, x, y, p_size) {
     //material = new THREE.MeshNormalMaterial({wireframe: false});
 
     this.part_mesh = new THREE.Mesh(geo, this.cres_mat);
-    this.part_mesh.position.z = 32;
+    this.part_mesh.position.z = 16;
     scene.add(this.part_mesh);
 }
 

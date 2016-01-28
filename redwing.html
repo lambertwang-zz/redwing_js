@@ -8,11 +8,19 @@
 	</head>
 
 	<body onresize="resizeRenderer()">
-		<div id="fps_counter">FPS</div>
-		<div id="game_ticks">Graphics Ticks</div>
-		<div id="graphics_ticks">Game Ticks</div>
+		<div id="info">
+			FPS
+			<span id="fps_counter">FPS</span>
+			<br/>
+			Graphics Ticks
+			<span id="game_ticks">Graphics Ticks</span>
+			<br/>
+			Game Ticks
+			<span id="graphics_ticks">Game Ticks</span>
+			<br/>
+		</div>
 		<div id="redwing"></div>
-
+		
 		<script type="x-shader/x-fragment" id="depth_shader_frag">
 uniform vec3 in_color;
 // uniform vec2 camera_planes;

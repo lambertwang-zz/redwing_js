@@ -22,7 +22,10 @@ var key_status = {
 	38: false, // up
 	37: false, // left
 	39: false, // right
-	40: false // down
+	40: false, // down
+	67: false, // c
+	88: false, // x
+	90: false // z
 }
 
 function hsltorgb (h, s, l) {
@@ -76,4 +79,8 @@ function rgbtohsl (r, g, b) {
 		sat = delta / (1- Math.abs(2 * lit - 1));
 	}
 	return [Math.round(hue), Math.round(sat), Math.round(lit)];
+}
+
+function signum(num) {
+	return (num == 0 ? 0 : num > 0.0); 
 }
