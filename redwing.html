@@ -5,9 +5,11 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" type="text/css" href="style.css">
+
+		<script data-main="js/main" src="lib/require.js"></script>
 	</head>
 
-	<body onresize="resizeRenderer()">
+	<body>
 		<div id="info">
 			FPS
 			<br/>
@@ -26,8 +28,11 @@
 			<span id="game_ticks">Ticks</span>
 			<br/>
 		</div>
-		<div id="redwing"></div>
+		<div id="idk">
+			<div id="redwing" oncontextmenu="return false"></div>
+		</div>
 		
+		<!-- Shaders -->
 		<script type="x-shader/x-fragment" id="depth_shader_frag">
 uniform vec3 in_color;
 // uniform vec2 camera_planes;
@@ -64,11 +69,14 @@ varying vec2 vuv;
 
 void main() {
 
-	float trans = 1.0;
-	if (length(vuv - vec2(0.5, 0.5)) > 0.5) {
-		trans = 0.0;
-	}
 	float life1 = 0.5 - lifespan/2.0;
+	float trans = 1.0 - life1;
+	float dist_center = length(vuv - vec2(0.5, 0.5));
+	if (dist_center > 0.5) {
+		trans = 0.0;
+	} if (dist_center > 0.45) {
+		trans =  1.0 - (dist_center - 0.45) * 20.0;
+	}
 	if (length(vuv - vec2(life1, 0.5)) < life1) {
 		trans = 0.0;
 	}
@@ -78,7 +86,6 @@ void main() {
 		trans
 		);
 }
-
 		</script>
 		<script type="x-shader/x-fragment" id="crescent_vert">
 varying vec2 vuv;
@@ -89,23 +96,6 @@ void main() {
 	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 		</script>
-
-
-		<script src="lib/three.min.js"></script>
-		<script src="lib/jquery v2.2.0.min.js"></script>
-		
-		<script src="js/util.js"></script>
-		
-		<script src="js/hitbox.js"></script>
-
-		<script src="js/particle.js"></script>
-		<script src="js/object.js"></script>
-		
-		<script src="js/events.js"></script>
-		<script src="js/gameManager.js"></script>
-		<script src="js/graphicsManager.js"></script>
-		
-		<script src="js/redwing.js"></script>
 
 	</body>
 </html>

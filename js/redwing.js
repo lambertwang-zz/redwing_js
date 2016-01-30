@@ -1,49 +1,43 @@
 "use strict";
 
-// Main program
+define(
+	['gameManager', 'graphicsManager', 'networkManager', 'util', 'game/plane', 'game/Cuuube', 'game/menu'], 
+	function(GameManager, GraphicsManager, NetworkManager, util, Plane, Cuuube, Menu) {
+	var main_module = {
+		init: function() {
+		    util.gameManager = new GameManager();
+		    util.graphicsManager = new GraphicsManager();
+		    util.networkManager = new NetworkManager();
 
-init();
-main();
+		    util.networkManager.initSocket();
+		    util.networkManager.testSend();
 
-var plane;
+		    new Menu("main");
+		},
 
+		main: function() {
+			this.graphicsLoop();
+			this.gameLoop();
+		},
 
-function init() {
-    gameManager = new GameManager();
-    graphicsManager = new GraphicsManager();
+		gameLoop: function() {
+			util.gameManager.mainLoop();
+		},
 
-    plane = new Plane();
-    new Cuuube(2000, 1000);
-    new Cuuube(2000, -1000);
-    new Cuuube(-2000, 1000);
-    new Cuuube(-2000, -1000);
-}
+		graphicsLoop: null,
 
-function main() {
-	graphicsLoop();
-	gameLoop3();
-}
-
-function gameLoop() {
-	gameManager.mainLoop();
-}
-
-function gameLoop2() {
-	gameManager.mainLoop2();
-}
-
-function gameLoop3() {
-	gameManager.mainLoop3();
-}
-
-function graphicsLoop() {
-	requestAnimationFrame(graphicsLoop);
-
-	graphicsManager.updateGraphics();
+	};
 	
-	renderer.render(scene, camera);
-};
+	window.addEventListener( 'resize', resizeRenderer, false );
+	function resizeRenderer() {
+		util.graphicsManager.resizeRenderer();
+	};
 
-function resizeRenderer() {
-	graphicsManager.resizeRenderer();
-}
+	main_module.graphicsLoop = function() {
+		requestAnimationFrame(main_module.graphicsLoop);
+		util.graphicsManager.updateGraphics();
+		util.renderer.render(util.scene, util.camera);
+	};
+
+	return main_module;
+});

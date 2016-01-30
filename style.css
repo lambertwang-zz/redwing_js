@@ -12,11 +12,18 @@ body {
 }
 
 div#redwing {
+    position: absolute;
+    height: auto;
+    width: auto;
+    top: 50%;
+    left: 50%;
+}
+
+div#idk {
 	position: fixed;
 	width: 100%;
 }
 
 canvas {
-    display: table;
-    margin: 0 auto;
+    margin-left: -50%;
 }
